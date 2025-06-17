@@ -1,3 +1,4 @@
 ./data/*_data*
 *.log
 *.DS_store
+*.tsv
