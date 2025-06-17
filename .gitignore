@@ -1,4 +1,10 @@
+#Ignore the folders with count data
 ./data/*_data*
+
+#Ignore all log files
 *.log
-*.DS_store
+
+*.DS_Store
+
+#Ignore all count tables as well
 *.tsv
