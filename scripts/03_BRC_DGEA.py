@@ -15,35 +15,43 @@ import pandas as pd
 import os
 
 #set the working directory
-os.chdir("/Users/smallparty/Desktop/Breast Carcinoma Practice")
+os.chdir("/Users/smallparty/Desktop/Breast Carcinoma Practice/scripts")
 
 #make the list for DataFrames
 def DF_list_from_dir(path_to_dir, sep, head, skip):
     import pandas as pd
     import os
     
-    names = os.listdir(path_to_dir) #get the list of file names
-    
     #make the list of data frames
     data_lst = []
-    for i in names:
-        try:
-            #read each DF from a directory
-            data = pd.read_csv(path_to_dir + i, 
-                               sep = sep, 
-                               header = head, 
-                               skiprows = skip)
-            #add it to the list
-            data_lst.append(data)
-        except UnicodeDecodeError:
-            continue
+    
+    for file in os.listdir(path_to_dir): #a cycle that takes each file name from a given directory
+            #gett a full path to a file
+            full_path = os.path.join(path_to_dir, file)
+            try:
+                data = pd.read_csv(full_path, 
+                                   sep = sep, 
+                                   header = head, 
+                                   skiprows = skip,
+                                   encoding = "utf-8")
+                if data.shape[0] == 0 or data.shape[1] < 2:
+                    print(f"Skipping {file}: Empty or malformed")
+                    continue
+                #add it to the list
+                data_lst.append(data)
+                
+            #there may be a .DS_Store file, ignore it    
+            except pd.errors.EmptyDataError:
+                print(f"Skipping empty or invalid file: {file}")
+            except Exception as e:
+                print(f"Error reading {file}: {e}")
     return data_lst
 
 #get the normal data list
-norm_data_lst = DF_list_from_dir(path_to_dir = "normal_data/", sep = "\t", head = 0, skip = 1)
+norm_data_lst = DF_list_from_dir(path_to_dir = "../data/normal_data2/", sep = "\t", head = 0, skip = 1)
 
 #get the tumor data list
-tum_data_lst = DF_list_from_dir(path_to_dir = "tumor_data/", sep = "\t", head = 0, skip = 1)
+tum_data_lst = DF_list_from_dir(path_to_dir = "../data/tumor_data2/", sep = "\t", head = 0, skip = 1)
 
 
 #now we merge all the data frames into two (only leaving columns gene_id, gene_name and unstranded)
@@ -55,6 +63,8 @@ for i in range(1,len(norm_data_lst)):
                            on = "gene_id", 
                            how = "inner",
                            suffixes=('', f'_{i}'))
+
+for i in range(1,len(tum_data_lst)):
     tumor_data = pd.merge(tumor_data, tum_data_lst[i][["gene_id", "unstranded"]], 
                            on = "gene_id", 
                            how = "inner",
@@ -70,6 +80,11 @@ data = data.set_index("gene_id")
 
 #filter out genes with low counts
 filtered = data[data.sum(axis=1) > 10]
+
+normal_data.to_csv("../results/unstranded_normal_counts.csv")
+tumor_data.to_csv("../results/unstranded_tumor_counts.csv")
+data.to_csv("../results/full_count_matrix.csv")
+filtered.to_csv("../results/filtered_count_matrix.csv")
 
 #=====================================================================================================================
 #Doing the DE analysis
