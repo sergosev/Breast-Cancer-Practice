@@ -200,13 +200,10 @@ GO_results = enrichr(
     organism = "Human",
     cutoff = 0.05)
     
-#Now I filter the results
+#Now I save the results
 GO_df = GO_results.res2d.copy()
 GO_df.to_csv("../results/GO_enrichment_results.csv")
-#maybe something wrong with statistics, I get 4-7k of upregulated genes (that's too much)
-#gotta recheck the DE analysis part
-#GO Analysis does not give any meaningful results, I will try to do it in a straightforward way
-#Also gotta check it for other data
+
 
 #=====================================================================================================================
 #Downloaded surfaceome table of proteins from https://wlab.ethz.ch/surfaceome/
