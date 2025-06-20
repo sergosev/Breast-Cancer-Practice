@@ -10,4 +10,4 @@
 *.tsv
 
 #Ignore virtual environment folder
-./env/
+./env/*
