@@ -5,47 +5,47 @@ The STAR-counts tables were downloaded from GDCA, TCGA-project. The tumor data w
 I am using PyDESeq package for Differential Gene Expression Analysis (DGEA), Enrichr from GSEApy for Gene Onthology Enrichment Analysis. 
 ---
 
-## 📁 Project Structure
-|
-|---data/					<-GDC manifests for downloading raw data and raw data gene counts (not included in the repository)
-|---scripts/
-|      |---01_GDC_download.bash			<-bash script for downloading raw STAR-counts from GDC (TCGA project)
-|      |---02_data_unpacking.bash		<-bash script for preparing all the downloaded tables for differential expression analysis
-|      |---03_BRC_DGEA.py			<-Python script for differential expression analysis and CAR-T cell therapy target search
-|---results/					<-.csv tables and plots derived during the pipeline work
-|---gdc-client.exe				<-gdc client used for downloading raw data for the GDC portal
-|---README.md
-|---LICENSE.txt
-|---.gitignore
+# 📁 Project Structure
+|\n
+|---data/					<-GDC manifests for downloading raw data and raw data gene counts (not included in the repository)\n
+|---scripts/\n
+|      |---01_GDC_download.bash			<-bash script for downloading raw STAR-counts from GDC (TCGA project)\n
+|      |---02_data_unpacking.bash		<-bash script for preparing all the downloaded tables for differential expression analysis\n
+|      |---03_BRC_DGEA.py			<-Python script for differential expression analysis and CAR-T cell therapy target search\n
+|---results/					<-.csv tables and plots derived during the pipeline work\n
+|---gdc-client.exe				<-gdc client used for downloading raw data for the GDC portal\n
+|---README.md\n
+|---LICENSE.txt\n
+|---.gitignore\n
 
 ---
 
-## Workflow
-# **1: Downloading raw gene counts tables - /scripts/01_GDC_dosnload.bash
+# Workflow
+## 1: Downloading raw gene counts tables - /scripts/01_GDC_dosnload.bash
 The bash script "01_GDC_download.bash" uses manifests from /data/manifests to download 30 .tsv STAR-counts tables for tumor tissue and 29 tables for normal tisue from GDC data portal. 
 Tumor type: Breast Cancer, Ductal and Lobular neoplasm.
 Tumor sample: primary solid tumor.
 Normal sample: healthy solid tissue	
 
-# **2: Organising the data for the analysis - /scripts/02_data_unpacking.bash
+## 2: Organising the data for the analysis - /scripts/02_data_unpacking.bash
 This script deletes anything non-related to the data analysis and puts all the .tsv tables in the correct folders.
 
-# **3: Differential Gene Expression Analysis - /scripts/03_BRC_DGEA.py
-Steps of this Python script:
-	- Upload all the gene counts tables and create a gene counts matrix
-	- Create a DESeq DataSet
-	- Get the data frame with log2FoldChange values and their p-values
-	- Apply LFC shrinkage 
-	- Filter out upregulated genes (p-value < 0.05 and LFC > 2.5)
-	- Conduct a Gene Onthology Enrichment Analysis via Enrichr from GSEApy
-	- Intersect the DGEA results data frame with the surfaceome data frame from https://wlab.ethz.ch/surfaceome/
+## 3: Differential Gene Expression Analysis - /scripts/03_BRC_DGEA.py
+Steps of this Python script:\n
+	- Upload all the gene counts tables and create a gene counts matrix\n
+	- Create a DESeq DataSet\n
+	- Get the data frame with log2FoldChange values and their p-values\n
+	- Apply LFC shrinkage\n
+	- Filter out upregulated genes (p-value < 0.05 and LFC > 2.5)\n
+	- Conduct a Gene Onthology Enrichment Analysis via Enrichr from GSEApy\n
+	- Intersect the DGEA results data frame with the surfaceome data frame from https://wlab.ethz.ch/surfaceome/\n
 
 ---
 
-## Requirements:
-Python 3.12.17
-Install via 'pip install -r requirements.txt'
-Minimal dependencies:
+# Requirements:
+Python 3.12.17\n
+Install via 'pip install -r requirements.txt'\n
+Minimal dependencies:\n
 '''txt
 pandas
 pydeseq2
@@ -55,7 +55,7 @@ numpy
 mygene
 gseapy
 bipython'''
-
+\n
 For Enrichr and mygene you will need Internet access.
 
 ---
@@ -77,17 +77,16 @@ For Enrichr and mygene you will need Internet access.
 ---
 
 ## Git Ignore
-.gitignore:
-*.tsv
-*.log
-.DS_Store
-/data/*_data/*
+*.tsv\n
+*.log\n
+.DS_Store\n
+/data/*_data/*\n
 
 all important results are uploaded as .csv files in the /results/ folder.
 Raw gene_counts tables are ignored as well as .log files.
 
 ---
 ## Contact
-Feel free to contact me via e-mail or Telegram. I would be glad to hear your feedback and ideas.
-sergey.losev.01@gmail.com
+Feel free to contact me via e-mail or Telegram. I would be glad to hear your feedback and ideas.\n
+sergey.losev.01@gmail.com\n
 TG: @small_party
