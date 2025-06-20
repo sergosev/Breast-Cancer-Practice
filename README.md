@@ -9,28 +9,16 @@ I am using PyDESeq package for Differential Gene Expression Analysis (DGEA), Enr
 ---
 
 # 📁 Project Structure
-|
-
-|---data/					<-GDC manifests for downloading raw data and raw data gene counts (not included in the repository)
-
-|---scripts/
-
-|      |---01_GDC_download.bash			<-bash script for downloading raw STAR-counts from GDC (TCGA project)
-
-|      |---02_data_unpacking.bash		<-bash script for preparing all the downloaded tables for differential expression analysis
-
-|      |---03_BRC_DGEA.py			<-Python script for differential expression analysis and CAR-T cell therapy target search
-
-|---results/					<-.csv tables and plots derived during the pipeline work
-
-|---gdc-client.exe				<-gdc client used for downloading raw data for the GDC portal
-
-|---README.md
-
-|---LICENSE.txt
-
-|---.gitignore
-
+- data/					<-GDC manifests for downloading raw data and raw data gene counts (not included in the repository)
+- scripts/
+  - 01_GDC_download.bash			<-bash script for downloading raw STAR-counts from GDC (TCGA project)
+  - 02_data_unpacking.bash		<-bash script for preparing all the downloaded tables for differential expression analysis
+  - 03_BRC_DGEA.py			<-Python script for differential expression analysis and CAR-T cell therapy target search
+- results/					<-.csv tables and plots derived during the pipeline work
+- gdc-client.exe				<-gdc client used for downloading raw data for the GDC portal
+- README.md
+- LICENSE.txt
+- .gitignore
 
 ---
 
