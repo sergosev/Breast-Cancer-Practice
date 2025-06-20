@@ -10,25 +10,15 @@ I am using PyDESeq package for Differential Gene Expression Analysis (DGEA), Enr
 
 # 📁 Project Structure
 |
-
 |---data/					<-GDC manifests for downloading raw data and raw data gene counts (not included in the repository)
-
 |---scripts/
-
 |      |---01_GDC_download.bash			<-bash script for downloading raw STAR-counts from GDC (TCGA project)
-
 |      |---02_data_unpacking.bash		<-bash script for preparing all the downloaded tables for differential expression analysis
-
 |      |---03_BRC_DGEA.py			<-Python script for differential expression analysis and CAR-T cell therapy target search
-
 |---results/					<-.csv tables and plots derived during the pipeline work
-
 |---gdc-client.exe				<-gdc client used for downloading raw data for the GDC portal
-
 |---README.md
-
 |---LICENSE.txt
-
 |---.gitignore
 
 
@@ -48,19 +38,19 @@ This script deletes anything non-related to the data analysis and puts all the .
 ## **3: Differential Gene Expression Analysis - /scripts/03_BRC_DGEA.py**
 Steps of this Python script:
 
-	- Upload all the gene counts tables and create a gene counts matrix
+- Upload all the gene counts tables and create a gene counts matrix
 
-	- Create a DESeq DataSet
+- Create a DESeq DataSet
 
-	- Get the data frame with log2FoldChange values and their p-values
+- Get the data frame with log2FoldChange values and their p-values
 
-	- Apply LFC shrinkage
+- Apply LFC shrinkage
 
-	- Filter out upregulated genes (p-value < 0.05 and LFC > 2.5)
+- Filter out upregulated genes (p-value < 0.05 and LFC > 2.5)
 
-	- Conduct a Gene Onthology Enrichment Analysis via Enrichr from GSEApy
+- Conduct a Gene Onthology Enrichment Analysis via Enrichr from GSEApy
 
-	- Intersect the DGEA results data frame with the surfaceome data frame from https://wlab.ethz.ch/surfaceome/
+- Intersect the DGEA results data frame with the surfaceome data frame from https://wlab.ethz.ch/surfaceome/
 
 
 ---
@@ -72,22 +62,14 @@ Install via 'pip install -r requirements.txt'
 
 Minimal dependencies:
 
-'''txt
-pandas
-
-pydeseq2
-
-matplotlib
-
-seaborn
-
-numpy
-
-mygene
-
-gseapy
-
-bipython'''
+- pandas
+- pydeseq2
+- matplotlib
+- seaborn
+- numpy
+- mygene
+- gseapy
+- biopython
 
 
 For Enrichr and mygene you will need Internet access.
@@ -111,13 +93,10 @@ For Enrichr and mygene you will need Internet access.
 ---
 
 ## Git Ignore
-*.tsv
-
-*.log
-
-.DS_Store
-
-/data/*_data/*
+- *.tsv
+- *.log
+- .DS_Store
+- /data/*_data/*
 
 All important results are uploaded as .csv files in the /results/ folder.
 
