@@ -5,18 +5,14 @@ Spyder Editor
 This is a temporary script file.
 """
 
-#got 2 attempts with this
-#the original data is with no number
-#second attemt data folders and manifests are marked by number 2
-#for second attempt all data was manually selected to be for Ductal and Lobular Neoplasms
-#This script is for attempt 1, gotta change filenames for attempt 2
-
 import pandas as pd
 import os
 
 #set the working directory
 os.chdir("/Users/smallparty/Desktop/Breast Carcinoma Practice/scripts")
 
+print("Preparing gene count matrix")
+print("...")
 #make the list for DataFrames
 def DF_list_from_dir(path_to_dir, sep, head, skip):
     import pandas as pd
@@ -48,10 +44,10 @@ def DF_list_from_dir(path_to_dir, sep, head, skip):
     return data_lst
 
 #get the normal data list
-norm_data_lst = DF_list_from_dir(path_to_dir = "../data/normal_data2/", sep = "\t", head = 0, skip = 1)
+norm_data_lst = DF_list_from_dir(path_to_dir = "../data/normal_data/", sep = "\t", head = 0, skip = 1)
 
 #get the tumor data list
-tum_data_lst = DF_list_from_dir(path_to_dir = "../data/tumor_data2/", sep = "\t", head = 0, skip = 1)
+tum_data_lst = DF_list_from_dir(path_to_dir = "../data/tumor_data/", sep = "\t", head = 0, skip = 1)
 
 
 #now we merge all the data frames into two (only leaving columns gene_id, gene_name and unstranded)
@@ -91,9 +87,12 @@ filtered.to_csv("../results/filtered_count_matrix.csv")
 from pydeseq2.dds import DeseqDataSet
 
 #create the meta data (a df that says which sample is which)
-n_lst = ["norm" for _ in range(30)]
-t_lst = ["tumor" for _ in range(30)]
+n_lst = ["norm"]*29
+t_lst = ["tumor"]*30
 meta = pd.DataFrame(n_lst + t_lst, columns = ["condition"], index = filtered.columns)
+
+print("Making the DeseqDataSet")
+print("...")
 
 #make a DeseqDataSet (aka get log2FC values with GLM)
 ds = DeseqDataSet(counts = filtered.T, #give it a df where rows = samples, cols = genes
@@ -101,27 +100,38 @@ ds = DeseqDataSet(counts = filtered.T, #give it a df where rows = samples, cols 
                   design = "~condition", #compare based on the condition column from metadata
                   refit_cooks = True) #filter out outliers
 
+print("Fitting glm parameters")
+print("...")
+
 ds.deseq2() #fit LFCs and other statistical stuff (i'm interested in LFCs)
 
 #now we get the results
 from pydeseq2.ds import DeseqStats
+
+print("Doing the DGEA")
+print("...")
 
 #perform statistical analysis (make sure that calculated LFCs are not zero!)
 res = DeseqStats(ds,
                  contrast = ["condition", "tumor", "norm"],
                  alpha = 0.05)
 res.summary() #add the summary to the res DataSet
-res.results_df #The resulting table is here
 
-#subset the statistically significant LFCs that are 4 and bigger
-res.results_df[(res.results_df["log2FoldChange"] >= 4) & (res.results_df["padj"] <= 0.05)]
+res.results_df.to_csv("../results/DE_results.csv") #The resulting table is here
+
+print("LFC shrinkage")
+print("...")
 
 #LFC shrinkage
 ds.obsm["design_matrix"] #we take the condition[T.tumor] as coeff
 res.lfc_shrink(coeff = "condition[T.tumor]")
-
+res.results_df.to_csv("../results/DE_res_LFC_shrank.csv")
 #=====================================================================================================================
 #Visualisation. VolcanoPlot
+
+print("Drawing VolcanoPlot")
+print("...")
+
 DE_res = res.results_df.copy() #get a full copy of the result data frame
 
 import matplotlib.pyplot as plt
@@ -161,10 +171,12 @@ plt.show() #view the plot
 #Gene Onthology Analysis (a failure)
 #I need genes that are associated with plasma membrane or cell surface
 import mygene as myg 
-from gprofiler import GProfiler
+
+print("Performing GO Enrichment Analysis")
+print("...")
 
 #filtering out upregulated genes
-upregulated = DE_res[(DE_res["padj"] < 0.05) & (DE_res["log2FoldChange"] >= 1)]
+upregulated = DE_res[(DE_res["padj"] < 0.05) & (DE_res["log2FoldChange"] >= 2.5)]
 
 #change IDs from ENSG*******.** to ENSG******* and save them to a list
 ensembl_ids = upregulated.index.str.replace(r'\.\d+', '', regex = True).tolist()
@@ -178,14 +190,6 @@ gene_map = pd.DataFrame(gene_info)[['query', 'symbol']].dropna()
 upregulated = upregulated.reset_index() #turn gene_ids into a column
 upregulated["gene_id"] = upregulated["gene_id"].str.replace(r'\.\d+', '', regex = True) #change IDs for the merge
 upregulated = upregulated.merge(gene_map, left_on = "gene_id", right_on = "query") #do the merge
-
-
-#Doing the GO Enrichment analysis via Gprofiler (it doesn't work)
-gp = GProfiler(return_dataframe = True) #get an object/database with methods to do a GO analysis
-GO_results = gp.profile(organism = "hsapiens", 
-                        query = upregulated['symbol'].tolist(),
-                        user_threshold = 0.05,
-                        sources = ["GO:CC"])
 
 
 #Doing the GO Analysis via Enrichr from GSEApy
@@ -198,7 +202,7 @@ GO_results = enrichr(
     
 #Now I filter the results
 GO_df = GO_results.res2d.copy()
-
+GO_df.to_csv("../results/GO_enrichment_results.csv")
 #maybe something wrong with statistics, I get 4-7k of upregulated genes (that's too much)
 #gotta recheck the DE analysis part
 #GO Analysis does not give any meaningful results, I will try to do it in a straightforward way
@@ -206,37 +210,26 @@ GO_df = GO_results.res2d.copy()
 
 #=====================================================================================================================
 #Downloaded surfaceome table of proteins from https://wlab.ethz.ch/surfaceome/
-surfaceome = pd.read_csv("surfaceome_Wollscheid_lab.txt", 
+surfaceome = pd.read_csv("../data/surfaceome_Wollscheid_lab.txt", 
                    sep = "\t", 
                    header = 0, 
                    skiprows = 1,
                    encoding = "latin1")
 
-#filtering out upregulated genes
-upregulated = DE_res[(DE_res["padj"] < 0.05) & (DE_res["log2FoldChange"] >= 1)]
+print("Intersecting DGEA results with surfaceome data")
+print("...")
 
-#change IDs from ENSG*******.** to ENSG******* and save them to a list
-ensembl_ids = upregulated.index.str.replace(r'\.\d+', '', regex = True).tolist()
 
-#get gene names from mygene
-mg = myg.MyGeneInfo() #get an object with methods to get gene names
-gene_info = mg.querymany(ensembl_ids, scopes = "ensembl.gene", fields = "symbol", species = "human") #get a list of gene names
-
-#convert to DataFrame and merge with upregulated DataFrame
-gene_map = pd.DataFrame(gene_info)[['query', 'symbol']].dropna()
-upregulated = upregulated.reset_index() #turn gene_ids into a column
-upregulated["gene_id"] = upregulated["gene_id"].str.replace(r'\.\d+', '', regex = True) #change IDs for the merge
-upregulated = upregulated.merge(gene_map, left_on = "gene_id", right_on = "query") #do the merge
-
-#Now I have a DF with upregulated genes and their symbols and IDs
+#I have a DF with upregulated genes and their symbols and IDs
 #Intersecting those with surfaceome
 surfaceome["UniProt name"] = surfaceome["UniProt name"].str.slice(0, -6) 
 surface_targets = upregulated[upregulated["symbol"].isin(surfaceome["UniProt name"])]
 
 #Sorting by LFCs
 surface_targets = surface_targets.sort_values("log2FoldChange", ascending = False)
+surface_targets.to_csv("../results/upregulated_surface_genes.csv")
 
-
+print("All Done!")
 
 
 

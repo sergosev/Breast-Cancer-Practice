@@ -9,5 +9,5 @@
 #Ignore all count tables as well
 *.tsv
 
-#Ignore results for now
-./results
+#Ignore virtual environment folder
+./env/
