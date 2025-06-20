@@ -14,6 +14,7 @@ I am using PyDESeq package for Differential Gene Expression Analysis (DGEA), Enr
   - 01_GDC_download.bash: bash script for downloading raw STAR-counts from GDC (TCGA project)
   - 02_data_unpacking.bash: bash script for preparing all the downloaded tables for differential expression analysis
   - 03_BRC_DGEA.py: Python script for differential expression analysis and CAR-T cell therapy target search
+  - setup.bash: a script for creating a virtual environment, installing all needed libraries from requirements.txt and activating virtual env
 - results/: .csv tables and plots derived during the pipeline work
 - gdc-client.exe: gdc client used for downloading raw data for the GDC portal
 - README.md
@@ -23,6 +24,11 @@ I am using PyDESeq package for Differential Gene Expression Analysis (DGEA), Enr
 ---
 
 # Workflow
+## **Setup**
+Run /scripts/setup.bash. It will create and activate a virtual environment and install all required libraries.
+
+You can skip this step if you have all needed libraries installed or go to Requirements and install the needed libraries without a virtual environment.
+
 ## **1: Downloading raw gene counts tables - /scripts/01_GDC_dosnload.bash**
 The bash script "01_GDC_download.bash" uses manifests from /data/manifests to download 30 .tsv STAR-counts tables for tumor tissue and 29 tables for normal tisue from GDC data portal. 
 
@@ -47,9 +53,9 @@ Steps of this Python script:
 ---
 
 # Requirements:
-Python 3.12.17
+Python 3.12
 
-Install needed libraries via 'pip install -r requirements.txt'
+Install needed libraries via 'pip install -r requirements.txt' from the main directory.
 
 Minimal dependencies:
 - pandas
