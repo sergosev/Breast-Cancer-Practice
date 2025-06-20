@@ -8,9 +8,12 @@ This is a temporary script file.
 import pandas as pd
 import os
 
-#set the working directory
-os.chdir("/Users/smallparty/Desktop/Breast Carcinoma Practice/scripts")
 
+#set the working directory
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+
+print("="*90)
 print("Preparing gene count matrix")
 print("...")
 #make the list for DataFrames
@@ -91,6 +94,7 @@ n_lst = ["norm"]*29
 t_lst = ["tumor"]*30
 meta = pd.DataFrame(n_lst + t_lst, columns = ["condition"], index = filtered.columns)
 
+print("="*90)
 print("Making the DeseqDataSet")
 print("...")
 
@@ -100,6 +104,7 @@ ds = DeseqDataSet(counts = filtered.T, #give it a df where rows = samples, cols 
                   design = "~condition", #compare based on the condition column from metadata
                   refit_cooks = True) #filter out outliers
 
+print("="*90)
 print("Fitting glm parameters")
 print("...")
 
@@ -108,6 +113,7 @@ ds.deseq2() #fit LFCs and other statistical stuff (i'm interested in LFCs)
 #now we get the results
 from pydeseq2.ds import DeseqStats
 
+print("="*90)
 print("Doing the DGEA")
 print("...")
 
@@ -119,6 +125,7 @@ res.summary() #add the summary to the res DataSet
 
 res.results_df.to_csv("../results/DE_results.csv") #The resulting table is here
 
+print("="*90)
 print("LFC shrinkage")
 print("...")
 
@@ -129,6 +136,7 @@ res.results_df.to_csv("../results/DE_res_LFC_shrank.csv")
 #=====================================================================================================================
 #Visualisation. VolcanoPlot
 
+print("="*90)
 print("Drawing VolcanoPlot")
 print("...")
 
@@ -172,6 +180,7 @@ plt.show() #view the plot
 #I need genes that are associated with plasma membrane or cell surface
 import mygene as myg 
 
+print("="*90)
 print("Performing GO Enrichment Analysis")
 print("...")
 
@@ -213,6 +222,7 @@ surfaceome = pd.read_csv("../data/surfaceome_Wollscheid_lab.txt",
                    skiprows = 1,
                    encoding = "latin1")
 
+print("="*90)
 print("Intersecting DGEA results with surfaceome data")
 print("...")
 
@@ -226,8 +236,7 @@ surface_targets = upregulated[upregulated["symbol"].isin(surfaceome["UniProt nam
 surface_targets = surface_targets.sort_values("log2FoldChange", ascending = False)
 surface_targets.to_csv("../results/upregulated_surface_genes.csv")
 
-print("All Done!")
-
+print("\nAll Done!")
 
 
 
