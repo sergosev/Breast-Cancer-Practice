@@ -14,7 +14,7 @@ I am using PyDESeq package for Differential Gene Expression Analysis (DGEA), Enr
   - 01_GDC_download.bash: bash script for downloading raw STAR-counts from GDC (TCGA project)
   - 02_data_unpacking.bash: bash script for preparing all the downloaded tables for differential expression analysis
   - 03_BRC_DGEA.py: Python script for differential expression analysis and CAR-T cell therapy target search
-  - setup.bash: a script for creating a virtual environment, installing all needed libraries from requirements.txt and activating virtual env
+  - setup.bash: a script for creating a virtual environment, installing all needed libraries from requirements.txt
 - results/: .csv tables and plots derived during the pipeline work
 - gdc-client.exe: gdc client used for downloading raw data for the GDC portal
 - README.md
@@ -24,8 +24,13 @@ I am using PyDESeq package for Differential Gene Expression Analysis (DGEA), Enr
 ---
 
 # Workflow
+All scripts are run in the Terminal from the main folder via ./scripts/"script_name". They worked on my MacOS with Python 3.10. I tried adapting them for Ubuntu, but still gotta check whether they will work on other computers.
+The scripts are location-dependent.
+
 ## **Setup**
-Run /scripts/setup.bash. It will create and activate a virtual environment and install all required libraries.
+Run /scripts/setup.bash. It will create and activate a virtual environment and install all required libraries. Run this script only once!
+
+After running the script run "source ./env/bin/activate". When finished working run "deactivate". Activate the venv each time you need to run the Python script.
 
 You can skip this step if you have all needed libraries installed or go to Requirements and install the needed libraries without a virtual environment.
 
@@ -35,6 +40,8 @@ The bash script "01_GDC_download.bash" uses manifests from /data/manifests to do
 - Tumor type: Breast Cancer, Ductal and Lobular neoplasm.
 - Tumor sample: primary solid tumor.
 - Normal sample: healthy solid tissue	
+
+Make sure you have the GDC Transfer Tool installed in the main folder! Download the archive with the Tool from https://gdc.cancer.gov/access-data/gdc-data-transfer-tool. Unpack the archive to the main folder.
 
 ## **2: Organising the data for the analysis - /scripts/02_data_unpacking.bash**
 This script deletes anything non-related to the data analysis and puts all the .tsv tables in the correct folders.
@@ -53,9 +60,9 @@ Steps of this Python script:
 ---
 
 # Requirements:
-Python 3.12
+Python 3.10
 
-Install needed libraries via 'pip install -r requirements.txt' from the main directory.
+Install needed libraries via 'pip install -r requirements.txt' from the main directory or run "./scripts/setup.bash".
 
 Minimal dependencies:
 - pandas
@@ -77,6 +84,7 @@ For Enrichr and mygene you will need Internet access.
 - GO Enrichment Analysis
 - Surfaceome cross-referencing
 - Potential target list generation
+- Tried adapting bash scripts to work on Ubuntu as well as MacOS
 
 ---
 
@@ -84,6 +92,7 @@ For Enrichr and mygene you will need Internet access.
 - Results visualisation
 - Search for genes that are not expressed in normal tissue
 - Analysis of the results and literature review
+- Further adaptations and optimisation of all scripts
 
 ---
 
