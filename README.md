@@ -4,7 +4,7 @@ This project performs a full RNA-seq differential expression analysis (DEA) of b
 
 The STAR-counts tables were downloaded from GDCA, TCGA-project. The tumor data was collected from primary solid tissue samples of Ductal and Lobular neoplasms. The normal data was collected from healthy tissues of the patients with the same cancer type.
 
-I am using PyDESeq package for Differential Gene Expression Analysis (DGEA), Enrichr from GSEApy for Gene Onthology Enrichment Analysis. 
+I am using PyDESeq2 package for Differential Gene Expression Analysis (DGEA), Enrichr from GSEApy for Gene Onthology Enrichment Analysis. 
 
 ---
 
@@ -85,12 +85,14 @@ For Enrichr and mygene you will need Internet access.
 - Surfaceome cross-referencing
 - Potential target list generation
 - Tried adapting bash scripts to work on Ubuntu as well as MacOS
+- Filtered out upregulated genes with low CPM in normal tissue
+- Annotated these potential targets via MyGeneInfo
+- First attempts at visualisation
 
 ---
 
 ## Plans for future
 - Results visualisation
-- Search for genes that are not expressed in normal tissue
 - Analysis of the results and literature review
 - Further adaptations and optimisation of all scripts
 
