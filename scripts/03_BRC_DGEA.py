@@ -11,7 +11,7 @@ import numpy as np
 
 
 #set the working directory
-os.chdir("/Users/smallparty/Desktop/Breast Carcinoma Practice/scripts")
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 print("="*120)
 print("🟢 Preparing gene count matrix...")
