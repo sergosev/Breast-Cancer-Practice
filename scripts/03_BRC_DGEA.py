@@ -7,7 +7,7 @@ This is a temporary script file.
 
 import pandas as pd
 import os
-
+import numpy as np
 
 
 #set the working directory
@@ -89,14 +89,14 @@ filtered.to_csv("../results/filtered_count_matrix.csv")
 #Doing the DE analysis
 from pydeseq2.dds import DeseqDataSet
 
-#create the meta data (a df that says which sample is which)
-n_lst = ["norm"]*30
-t_lst = ["tumor"]*30
-meta = pd.DataFrame(n_lst + t_lst, columns = ["condition"], index = filtered.columns)
-
 print("="*120)
 print("🟢 Making the DeseqDataSet...")
 
+
+#create the meta data (a df that says which sample is which)
+n_lst = ["norm"]*len(norm_data_lst)
+t_lst = ["tumor"]*len(tum_data_lst)
+meta = pd.DataFrame(n_lst + t_lst, columns = ["condition"], index = filtered.columns)
 
 #make a DeseqDataSet (aka get log2FC values with GLM)
 ds = DeseqDataSet(counts = filtered.T, #give it a df where rows = samples, cols = genes
@@ -164,16 +164,31 @@ upregulated = upregulated.merge(gene_map, left_on = "gene_id", right_on = "query
 
 #Doing the GO Analysis via Enrichr from GSEApy
 from gseapy import enrichr
-GO_results = enrichr(
+GO_CC_res = enrichr(
     gene_list = upregulated['symbol'].dropna().tolist(),
     gene_sets = 'GO_Cellular_Component_2021',
     organism = "Human",
     cutoff = 0.05)
+
+GO_BP_res = enrichr(
+    gene_list = upregulated['symbol'].dropna().tolist(),
+    gene_sets = 'GO_Biological_Process_2021',
+    organism = "Human",
+    cutoff = 0.05)
+
+GO_MF_res = enrichr(
+    gene_list = upregulated['symbol'].dropna().tolist(),
+    gene_sets = 'GO_Molecular_Function_2021',
+    organism = "Human",
+    cutoff = 0.05)
     
 #Now I save the results
-GO_df = GO_results.res2d.copy()
-GO_df.to_csv("../results/GO_enrichment_results.csv")
-
+GO_CC_df = GO_CC_res.res2d.copy()
+GO_BP_df = GO_BP_res.res2d.copy()
+GO_MF_df = GO_MF_res.res2d.copy()
+GO_CC_df.to_csv("../results/GO_CC_results.csv")
+GO_BP_df.to_csv("../results/GO_BP_results.csv")
+GO_MF_df.to_csv("../results/GO_MF_results.csv")
 
 #=====================================================================================================================
 #I have a list of cell surface proteins IDs from https://wlab.ethz.ch/surfaceome/
@@ -222,7 +237,7 @@ norm_norm_df["normal_mean_CPM"] = norm_norm_df.drop(columns=["gene_id"]).mean(ax
 merged = merged.merge(norm_norm_df[["gene_id", "normal_mean_CPM"]], on="gene_id", how="left")
 
 #filtering out final candidates
-final_candidates = merged[merged["normal_mean"] < 5][["gene_id", "symbol", "log2FoldChange", "lfcSE", "padj", "normal_mean_CPM"]]
+final_candidates = merged[merged["normal_mean_CPM"] < 5][["gene_id", "symbol", "log2FoldChange", "lfcSE", "padj", "normal_mean_CPM"]]
 final_candidates.to_csv("../results/final_candidates.csv")
 
 
@@ -239,12 +254,12 @@ annotations = mg.querymany(fin_cand_symb,
                            fields = ["name", "summary", "refseq"],
                            species = "human")
 annotations_df = pd.json_normalize(annotations)
-candidates_annotation = final_candidates.merge(
+fin_candidates_annotation = final_candidates.merge(
     annotations_df[["query", "name", "summary"]], 
     left_on = "symbol", right_on = "query", how = "left")
-candidates_annotation.drop("query", axis = 1, inplace = True)
+fin_candidates_annotation.drop("query", axis = 1, inplace = True)
 
-candidates_annotation.to_csv("../results/annotated_fin_candidates.csv")
+fin_candidates_annotation.to_csv("../results/annotated_fin_candidates.csv")
 
 #=====================================================================================================================
 #Visualising
@@ -273,13 +288,16 @@ DE_res = DE_res.merge(gene_df, left_on = "gene_id", right_on = "query") #do the 
 DE_res["significant"] = (DE_res["padj"] < 0.05) & (abs(DE_res["log2FoldChange"]) >= 1)
 
 #Filtering out 0 LFCs
-DE_res = DE_res[abs(DE_res["log2FoldChange"]) > 0.01]
-#Drawing VolcanoPlot______________________________________________________________________________
+DE_res_filtered = DE_res[abs(DE_res["log2FoldChange"]) > 0.01]
+
+#Drawing VolcanoPlot_______________________________________________________________________________
 plt.figure(figsize=(10, 6)) #set the plot size
+
+DE_res["Adjusted p-value"] = DE_res["significant"].map({True: "< 0.05", False: "> 0.05"})
 
 sns.scatterplot(
     data=DE_res, x="log2FoldChange", y=-np.log10(DE_res["padj"]),
-    hue="significant", palette={True: "red", False: "grey"},
+    hue="Adjusted p-value", palette={"< 0.05": "red", "> 0.05": "grey"},
     alpha=0.5, edgecolor=None
 )
 
@@ -289,12 +307,11 @@ plt.axvline(1, linestyle='--', color='black') #draw positive LFC threshold
 plt.xlabel("log2 Fold Change")
 plt.ylabel("-log10 Adjusted p-value")
 plt.title("Volcano Plot")
-plt.legend([],[], frameon=False)
 plt.tight_layout()
 plt.savefig("../results/volcano_targets.png")
 plt.show()
 
-#Drawing MA Plot______________________________________________________________________________
+#Drawing MA Plot___________________________________________________________________________________
 plt.figure(figsize=(10,6))
 sns.scatterplot(
     x = "baseMean",
@@ -303,6 +320,7 @@ sns.scatterplot(
     hue = DE_res["padj"] < 0.05,
     alpha=0.5, #transparency
 )
+plt.legend(title = "Adjusted p-value", labels = ["< 0.05", "> 0.05"])
 plt.axhline(0, color="black", linestyle="--") #horizontal line at 0 LFC
 plt.xscale("log") #make x scale logarithmic
 plt.xlabel("Mean expression (baseMean)")
@@ -313,9 +331,12 @@ plt.show()
 
 #Drawing LFC histogram______________________________________________________________________________
 plt.figure(figsize=(8,5))
-sns.histplot(DE_res["log2FoldChange"], bins=100, color="steelblue", kde=True)
+sns.histplot(DE_res["log2FoldChange"], #data
+             bins=100,  #number of bars
+             color="steelblue", #color of bars
+             kde=True) #draw a line based on distribution
 
-plt.axvline(0, color="black", linestyle="--")
+plt.axvline(0, color="black", linestyle="--") #draw a vertical at zero
 
 plt.title("Distribution of Log2 Fold Changes")
 plt.xlabel("log2 Fold Change")
@@ -324,6 +345,20 @@ plt.tight_layout()
 plt.savefig("../results/log2fc_histogram.png")
 plt.show()
 
+plt.figure(figsize=(8,5))
+sns.histplot(DE_res_filtered["log2FoldChange"], 
+             bins=100, 
+             color="steelblue", 
+             kde=True)
+
+plt.axvline(0, color="black", linestyle="--")
+
+plt.title("Distribution of Log2 Fold Changes")
+plt.xlabel("log2 Fold Change withour close to zero values")
+plt.ylabel("Number of Genes")
+plt.tight_layout()
+plt.savefig("../results/log2fc_histogram_wo_zeros.png")
+plt.show()
 print("\n✅ All Done!")
 
 
